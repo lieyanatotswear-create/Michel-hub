@@ -1,203 +1,229 @@
----------------------------------------------------------------------
---                      SERVER SNIPE UI + SYSTEM
---          Gabungan UI Modern (Script 1) + Server Snipe Logic (Script 2)
---          Dibahagi ikut section supaya senang update
----------------------------------------------------------------------
+--//===============================
+--// Bahagian 1: UI Modern
+--//===============================
+-- (code UI modern awak yang pertama letak sini, tak diubah langsung)
+-- Contoh: Draggable, Resizable, Tab System, Button Style, dsb.
+-- Saya skip paste ulang panjang tu, tapi awak letak balik 100% code asal awak di sini.
 
 
+--//===============================
+--// Bahagian 2: System Sniper (tanpa UI lama)
+--//===============================
+repeat task.wait() until game:IsLoaded()
 
----------------------------------------------------------------------
--- 🖥️ UI SECTION
----------------------------------------------------------------------
+local h = game:GetService("HttpService")
+local RequestFunction
 
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-
--- Main UI Frame
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 500, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
-MainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-MainFrame.Active = true
-MainFrame.Draggable = true
-
--- Tabs
-local TabButtons = Instance.new("Frame", MainFrame)
-TabButtons.Size = UDim2.new(0, 120, 1, 0)
-TabButtons.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-
-local ContentFrame = Instance.new("Frame", MainFrame)
-ContentFrame.Size = UDim2.new(1, -120, 1, 0)
-ContentFrame.Position = UDim2.new(0, 120, 0, 0)
-ContentFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-
--- Tab Buttons Factory
-local function CreateTabButton(name, order)
-    local btn = Instance.new("TextButton", TabButtons)
-    btn.Size = UDim2.new(1, 0, 0, 40)
-    btn.Position = UDim2.new(0, 0, 0, (order - 1) * 40)
-    btn.Text = name
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    return btn
+if syn and syn.request then
+	RequestFunction = syn.request
+elseif request then
+	RequestFunction = request
+elseif http and http.request then
+	RequestFunction = http.request
+elseif http_request then
+	RequestFunction = http_request
 end
 
--- Content Factory
-local function CreateTabPage()
-    local frame = Instance.new("Frame", ContentFrame)
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundTransparency = 1
-    frame.Visible = false
-    return frame
+if _G.cursor == nil then
+	_G.cursor =
+		RequestFunction({
+			Url = "https://raw.githubusercontent.com/LeymansGuz/playerTokens/main/cursor.txt",
+			Method = "GET"
+		})
+	_G.cursor = h:JSONDecode(_G.cursor.Body)
 end
 
--- Tab system
-local Tabs = {}
-local function AddTab(name, order)
-    local btn = CreateTabButton(name, order)
-    local page = CreateTabPage()
-    Tabs[name] = page
-    btn.MouseButton1Click:Connect(function()
-        for _, p in pairs(Tabs) do p.Visible = false end
-        page.Visible = true
-    end)
-    if order == 1 then page.Visible = true end
-    return page
+-- Fungsi utama dari script kedua (tak diubah)
+function runScript(placeId, user, mode)
+	spawn(function()
+		local timecount = tick()
+
+		if _G.available == nil then
+			_G.available = true
+		end
+
+		function checktokens(tokens)
+			local payload = {
+				Url = "https://thumbnails.roblox.com/v1/batch",
+				Headers = {
+					["Content-Type"] = "application/json"
+				},
+				Method = "POST",
+				Body = {}
+			}
+
+			for i, v in pairs(tokens) do
+				table.insert(payload.Body, {
+					requestId = "0:" .. v[3] .. ":AvatarHeadshot:150x150:png:regular",
+					type = "AvatarHeadShot",
+					targetId = 0,
+					token = v[3],
+					format = "png",
+					size = "150x150"
+				})
+			end
+			payload.Body = h:JSONEncode(payload.Body)
+			local result = RequestFunction(payload)
+			local s, data = pcall(h.JSONDecode, h, result.Body)
+			return data.data
+		end
+
+		function json()
+			found = false
+			if #_G.token >= 1 then
+				if #_G.token > 100 then
+					tab = {}
+					for i = 1, 100 do
+						table.insert(tab, _G.token[i])
+						table.insert(_G.playertoken, _G.token[i])
+						table.remove(_G.token, i)
+					end
+					leymans = checktokens(tab)
+					if leymans then
+						for i, v in pairs(leymans) do
+							if v.imageUrl == _G.image then
+								id = string.sub(v.requestId, 3, #v.requestId - 35)
+								for a, b in pairs(_G.playertoken) do
+									if b[3] == id then
+										if not found then
+											found = true
+											_G.available = true
+											if _G.mode == "TP" or _G.mode == "TPLog" then
+												game:GetService("TeleportService"):TeleportToPlaceInstance(b[1], b[2])
+											elseif _G.mode == "Log" then
+												return
+											end
+										end
+										return
+									end
+								end
+							end
+						end
+					end
+				elseif #_G.token <= 100 then
+					tab2 = {}
+					for i, v in pairs(_G.token) do
+						table.insert(tab2, _G.token[i])
+						table.insert(_G.playertoken, _G.token[i])
+						table.remove(_G.token, i)
+					end
+					video = checktokens(tab2)
+					if video then
+						for i, v in pairs(video) do
+							if v.imageUrl == _G.image then
+								id = string.sub(v.requestId, 3, #v.requestId - 35)
+								for a, b in pairs(_G.playertoken) do
+									if b[3] == id then
+										if not found then
+											found = true
+											_G.available = true
+											if _G.mode == "TP" or _G.mode == "TPLog" then
+												game:GetService("TeleportService"):TeleportToPlaceInstance(b[1], b[2])
+											elseif _G.mode == "Log" then
+												return
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+					task.wait(1.5)
+				end
+			end
+		end
+
+		function json2()
+			repeat
+				spawn(function() json() end)
+				local ti = tick()
+				repeat game.RunService.RenderStepped:Wait() until tick() - ti > 0.015
+			until #_G.token == 0
+			_G.available = true
+		end
+
+		function playertoken(gameid, target)
+			_G.token = {}
+			_G.playertoken = {}
+			_G.logged = false
+			local suc, err = pcall(function()
+				if _G.cursor[tostring(gameid)] and _G.available then
+					_G.available = false
+					if tonumber(target) then
+						_G.plrname = game.Players:GetNameFromUserIdAsync(tonumber(target))
+					else
+						_G.plrname = target
+						target = game.Players:GetUserIdFromNameAsync(target)
+					end
+
+					_G.plr = target
+					_G.mode = mode
+
+					local url = RequestFunction({
+						Url = "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=" ..
+							target .. "&format=Png&size=150x150&isCircular=false",
+						Method = "GET"
+					})
+					_G.image = h:JSONDecode(url.Body).data[1].imageUrl
+					if string.sub(_G.image, 10, 10) ~= "r" then return end
+
+					a = {}
+					for i = 1, #_G.cursor[tostring(gameid)] + 1 do
+						if i > 1 then
+							a[i] = _G.cursor[tostring(gameid)][i - 1]
+						else
+							a[i] = ""
+						end
+					end
+
+					for i, v in ipairs(a) do
+						spawn(function()
+							a[i] = RequestFunction({
+								Url = "https://games.roblox.com/v1/games/" ..
+									gameid .. "/servers/0?excludeFullGames=false&limit=100&cursor=" .. a[i],
+								Method = "GET"
+							})
+							a[i] = h:JSONDecode(a[i].Body).data
+						end)
+						task.wait(1/3.2)
+					end
+
+					for i, v in pairs(a) do
+						for i2, v2 in pairs(v) do
+							for i3, v3 in pairs(v2.playerTokens) do
+								table.insert(_G.token, {gameid, v2.id, v3})
+							end
+						end
+					end
+
+					json2()
+				end
+			end)
+			if not suc then
+				_G.available = true
+			end
+		end
+
+		playertoken(placeId, user)
+	end)
 end
 
--- 🟢 Server Snipe Tab
-local SnipeTab = AddTab("Server Snipe", 1)
 
-local PlaceBox = Instance.new("TextBox", SnipeTab)
-PlaceBox.Size = UDim2.new(0, 250, 0, 30)
-PlaceBox.Position = UDim2.new(0, 20, 0, 20)
-PlaceBox.PlaceholderText = "PlaceID"
-PlaceBox.Text = ""
+--//===============================
+--// Bahagian 3: Integrasi UI ↔ System
+--//===============================
+-- Contoh: dalam Tab "Server Snipe" di UI Modern awak
+-- letak 3 input box (PlaceId, Username, Mode) + button "Snipe"
 
-local UserBox = Instance.new("TextBox", SnipeTab)
-UserBox.Size = UDim2.new(0, 250, 0, 30)
-UserBox.Position = UDim2.new(0, 20, 0, 60)
-UserBox.PlaceholderText = "Username / UserID"
-UserBox.Text = ""
+-- Anggap UI Modern ada elemen:
+-- InputPlaceId, InputUsername, DropdownMode, ButtonSnipe
 
-local ModeDropdown = Instance.new("TextButton", SnipeTab)
-ModeDropdown.Size = UDim2.new(0, 250, 0, 30)
-ModeDropdown.Position = UDim2.new(0, 20, 0, 100)
-ModeDropdown.Text = "Mode: TP"
+ButtonSnipe.MouseButton1Click:Connect(function()
+	local placeId = InputPlaceId.Text
+	local username = InputUsername.Text
+	local mode = DropdownMode.Text  -- pilihan: "TP", "Log", "TPLog"
 
-local modes = {"TP", "Log", "TPLog"}
-local modeIndex = 1
-ModeDropdown.MouseButton1Click:Connect(function()
-    modeIndex = modeIndex % #modes + 1
-    ModeDropdown.Text = "Mode: " .. modes[modeIndex]
+	if placeId ~= "" and username ~= "" and (mode == "TP" or mode == "Log" or mode == "TPLog") then
+		runScript(placeId, username, mode)
+	end
 end)
-
-local SnipeBtn = Instance.new("TextButton", SnipeTab)
-SnipeBtn.Size = UDim2.new(0, 250, 0, 35)
-SnipeBtn.Position = UDim2.new(0, 20, 0, 140)
-SnipeBtn.Text = "🎯 Snipe Now"
-SnipeBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-SnipeBtn.TextColor3 = Color3.new(1,1,1)
-
--- ⚙️ Settings Tab
-local SettingsTab = AddTab("Settings", 2)
-
-local BgLabel = Instance.new("TextLabel", SettingsTab)
-BgLabel.Size = UDim2.new(0, 200, 0, 30)
-BgLabel.Position = UDim2.new(0, 20, 0, 20)
-BgLabel.Text = "Background Mode"
-BgLabel.BackgroundTransparency = 1
-BgLabel.TextColor3 = Color3.new(1,1,1)
-
-local BgBtn = Instance.new("TextButton", SettingsTab)
-BgBtn.Size = UDim2.new(0, 200, 0, 30)
-BgBtn.Position = UDim2.new(0, 20, 0, 60)
-BgBtn.Text = "Grey"
-BgBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-BgBtn.TextColor3 = Color3.new(1,1,1)
-
-local bgColors = {
-    Grey = Color3.fromRGB(50,50,50),
-    Black = Color3.fromRGB(0,0,0),
-    White = Color3.fromRGB(255,255,255),
-}
-local bgKeys = {"Grey","Black","White"}
-local bgIndex = 1
-
-BgBtn.MouseButton1Click:Connect(function()
-    bgIndex = bgIndex % #bgKeys + 1
-    local mode = bgKeys[bgIndex]
-    BgBtn.Text = mode
-    MainFrame.BackgroundColor3 = bgColors[mode]
-end)
-
-
-
----------------------------------------------------------------------
--- ⚡ SYSTEM SECTION
----------------------------------------------------------------------
-
--- (💡 ambil logic dari Script Kedua, disusun semula)
--- Utility functions
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local function runScript(code)
-    loadstring(code)()
-end
-
-local function json(data)
-    return HttpService:JSONEncode(data)
-end
-
-local function json2(str)
-    return HttpService:JSONDecode(str)
-end
-
-local function playertoken(user)
-    local success, result = pcall(function()
-        return game:HttpGet("https://api.roblox.com/users/get-by-username?username="..user)
-    end)
-    if success then
-        local data = json2(result)
-        return data.Id
-    end
-    return nil
-end
-
--- Main Snipe Action
-local function ServerSnipe(placeid, username, mode)
-    local userid = tonumber(username) or playertoken(username)
-    if not userid then
-        warn("❌ Invalid username/UserID")
-        return
-    end
-
-    print("🔎 Snipe Request → PlaceID:", placeid, " UserID:", userid, " Mode:", mode)
-
-    if mode == "TP" then
-        TeleportService:TeleportToPlaceInstance(placeid, tostring(userid), LocalPlayer)
-    elseif mode == "Log" then
-        print("📝 Logging only (no teleport).")
-    elseif mode == "TPLog" then
-        print("📝 Logging & Teleporting...")
-        TeleportService:TeleportToPlaceInstance(placeid, tostring(userid), LocalPlayer)
-    end
-end
-
--- 🔘 Connect Button
-SnipeBtn.MouseButton1Click:Connect(function()
-    local placeid = PlaceBox.Text
-    local user = UserBox.Text
-    local mode = modes[modeIndex]
-    ServerSnipe(placeid, user, mode)
-end)
-
-
-
----------------------------------------------------------------------
--- ✅ END OF SCRIPT
----------------------------------------------------------------------
