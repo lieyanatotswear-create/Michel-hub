@@ -62,7 +62,7 @@ end
 -- Root ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ModernHubGUI"
-ScreenGui.Parent = PlayerGui
+ScreenGui.Parent = gui.Parent = player:WaitForChild("PlayerGui")
 if syn and syn.protect_gui then
     syn.protect_gui(ScreenGui)
 end
