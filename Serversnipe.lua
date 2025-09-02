@@ -15,17 +15,32 @@ Features:
 Run this in your exploit environment with supported GUI API, TweenService, and exploits that provide like clipboard functionality.
 
 --]]
+repeat
+	wait()
+until game:IsLoaded()
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
-
-
-repeat wait() until Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerGui")
-
-
+local h = game:GetService("HttpService")
+local RequestFunction
+if syn and syn.request then
+	RequestFunction = syn.request
+elseif request then
+	RequestFunction = request
+elseif http and http.request then
+	RequestFunction = http.request
+elseif http_request then
+	RequestFunction = http_request
+end
+ 
+if not game.CoreGui:FindFirstChild("StreamSniper") then
+	local screenGui = Instance.new("ScreenGui", game.CoreGui)
+	screenGui.Name = "StreamSniper"
+	screenGui.IgnoreGuiInset = true
+ 
 local localPlayer = Players.LocalPlayer
 local PlayerGui = localPlayer:WaitForChild("PlayerGui")
 
