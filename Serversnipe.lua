@@ -22,6 +22,10 @@ local TweenService = game:GetService("TweenService")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 
+
+repeat wait() until Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerGui")
+
+
 local localPlayer = Players.LocalPlayer
 local PlayerGui = localPlayer:WaitForChild("PlayerGui")
 
